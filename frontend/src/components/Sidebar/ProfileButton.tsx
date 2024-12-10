@@ -23,7 +23,7 @@ const ProfileButton = ({ isDropdown = false }: Props) => {
 
   return (
     <div
-      className={`outline-none cursor-pointer  gap-2 p-1 rounded-full transition-all flex flex-col justify-center items-center ${isDropdown && "hover:bg-white min-w-44 w-60 active:bg-white p-0"}`}
+      className={`outline-none cursor-pointer  gap-2 px-1 rounded-full transition-all flex flex-col justify-center items-center ${isDropdown && "hover:bg-white min-w-44 w-60 active:bg-white"}`}
     >
       <Avatar className={` ${isDropdown && "w-20 h-20 border-2 border-green"}`}>
         <AvatarFallback className={`text-xl ${isDropdown && "text-4xl"}`}>
@@ -34,7 +34,7 @@ const ProfileButton = ({ isDropdown = false }: Props) => {
       {isDropdown && (
         <div className="flex flex-col flex-1 justify-center items-center">
           <div
-            className={`flex flex-row items-center justify-center min-h-12 flex-shrink-0 transition-all`}
+            className={`flex flex-row items-center justify-center min-h-8 flex-shrink-0 transition-all`}
           >
             <div className=" flex-row items-center justify-center block w-full truncate max-w-44">
               <Label className="text-lg">{user?.username}</Label>

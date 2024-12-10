@@ -61,54 +61,83 @@ router.put(
 
 // update email
 
-// update password
-router.put("/", authorization, async (request: Request, response: Response) => {
-  try {
-    const { currentPassword, newPassword, confirmNewPassword } = request.body;
+// Update password
+router.put(
+  "/password",
+  async (request: Request, response: Response, next: NextFunction) => {
+    try {
+      const { id } = request.query;
+      const { currentPassword, newPassword, confirmNewPassword } = request.body;
 
-    const userId = request.user;
-    if (!userId) {
-      response.status(401).json({ message: "Unauthorized: User ID missing" });
+      if (!id) {
+        response
+          .status(400)
+          .json({ message: "User ID is required in query parameters." });
+      }
+
+      if (!currentPassword || !newPassword || !confirmNewPassword) {
+        response
+          .status(400)
+          .json({ message: "All password fields are required." });
+      }
+
+      if (newPassword !== confirmNewPassword) {
+        response
+          .status(400)
+          .json({ message: "New password and confirmation do not match." });
+      }
+
+      const userQuery = await pool.query(
+        `SELECT password FROM users WHERE id = $1`,
+        [id],
+      );
+
+      if (userQuery.rows.length === 0) {
+        response.status(404).json({ message: "User not found." });
+      }
+
+      const storedPasswordHash = userQuery.rows[0].password;
+
+      // Verify the current password
+      const isPasswordValid = await bcrypt.compare(
+        currentPassword,
+        storedPasswordHash,
+      );
+
+      if (!isPasswordValid) {
+        response
+          .status(401)
+          .json({ message: "Current password is incorrect." });
+      }
+
+      const saltRounds = 10;
+      const newPasswordHash = await bcrypt.hash(newPassword, saltRounds);
+
+      const updateQuery = await pool.query(
+        `
+        UPDATE users
+        SET password = $1
+        WHERE id = $2
+        RETURNING id, username
+        `,
+        [newPasswordHash, id],
+      );
+
+      if (updateQuery.rows.length === 0) {
+        response
+          .status(400)
+          .json({ message: "Failed to update the password." });
+      }
+
+      response.status(200).json({
+        message: "Password updated successfully.",
+        user: updateQuery.rows[0],
+      });
+    } catch (error) {
+      next(error);
     }
-
-    if (newPassword !== confirmNewPassword) {
-      response.status(400).json({ message: "Passwords do not match" });
-    }
-
-    const userQuery = await pool.query(
-      "SELECT password FROM Users WHERE id = $1",
-      [userId],
-    );
-
-    if (userQuery.rows.length === 0) {
-      response.status(404).json({ message: "User not found" });
-    }
-
-    const storedPasswordHash = userQuery.rows[0].password;
-
-    const isPasswordValid = await bcrypt.compare(
-      currentPassword,
-      storedPasswordHash,
-    );
-
-    if (!isPasswordValid) {
-      response.status(401).json({ message: "Current password is incorrect" });
-    }
-
-    const saltRounds = 10;
-    const newPasswordHash = await bcrypt.hash(newPassword, saltRounds);
-
-    await pool.query("UPDATE Users SET password = $1 WHERE id = $2", [
-      newPasswordHash,
-      userId,
-    ]);
-
-    response.status(200).json({ message: "Password updated successfully" });
-  } catch (error) {
-    console.error("Error updating password:", error);
-    response.status(500).json({ message: "Internal server error" });
-  }
-});
+  },
+);
 
 // delete acoount
 

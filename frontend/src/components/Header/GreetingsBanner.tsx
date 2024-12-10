@@ -24,12 +24,15 @@ const GreetingsBanner = () => {
           animation: "slideIn 0.5s ease-out, fadeOut 0.5s ease-in 3.5s",
           marginRight: "3rem",
           marginTop: "-0.5rem",
+          // overflow: "hidden",
+          // textOverflow: "ellipsis",
+          // whiteSpace: "nowrap",
         },
       });
     }
   }, [user?.username]);
 
-  if (!user) return <div></div>;
+  if (!user) return;
 
   return (
     <>

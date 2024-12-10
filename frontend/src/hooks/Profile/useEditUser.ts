@@ -1,32 +1,32 @@
 import { useState } from "react";
+import { User } from "@/types/user.types";
+
+interface UpdatePasswordResult {
+  user?: User;
+  success: boolean;
+  error?: string | null;
+}
 
 const useEditUser = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<boolean>(false);
 
   const updatePassword = async (
+    userData: User,
     currentPassword: string,
     newPassword: string,
     confirmNewPassword: string,
-  ) => {
+  ): Promise<UpdatePasswordResult> => {
     setLoading(true);
     setError(null);
-    setSuccess(false);
 
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        throw new Error("Authentication token is missing.");
-      }
-
       const response = await fetch(
-        `${import.meta.env.VITE_BASE_API_URL}/profile`,
+        `${import.meta.env.VITE_BASE_API_URL}/profile/password?id=${userData.id}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            token: localStorage.token,
           },
           body: JSON.stringify({
             currentPassword,
@@ -36,22 +36,26 @@ const useEditUser = () => {
         },
       );
 
+      const responseData = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to update password.");
+        console.error("Error updating password:", responseData.message);
+        setError(responseData.message || "Failed to update password.");
+        return { success: false, error: responseData.message };
       }
 
-      setSuccess(true);
+      return { success: true, user: responseData.user };
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "An unknown error occurred.",
-      );
+      const errorMessage =
+        err instanceof Error ? err.message : "An unknown error occurred.";
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
     } finally {
       setLoading(false);
     }
   };
 
-  return { updatePassword, loading, error, success };
+  return { updatePassword, loading, error };
 };
 
 export default useEditUser;
