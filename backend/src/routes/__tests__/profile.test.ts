@@ -61,7 +61,6 @@ describe("The profile endpoint", () => {
         id: "52584e60-3480-4523-ab59-f4ad2bbf99aa",
         username: testUser.username,
       });
-    console.log(userId);
     expect(response.status).toBe(400);
     expect(response.body).toBeDefined();
     expect(response.body.message).toBe("Username already exists.");
