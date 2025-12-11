@@ -31,16 +31,11 @@ export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 app.use(express.json()); // use express.json to allow to parse JSON requests
 app.use(cors());
 
-// ROUTES
-const router = express.Router();
-
-router.use("/auth", authRoutes);
-router.use("/home", homeRoutes);
-router.use("/decks", deckRoutes);
-router.use("/notes", notesRoutes);
-router.use("/", flashcardRoutes);
-router.use("/videos", videoRoutes);
-router.use("/profile", profileRoutes);
-router.use("/ai", aiRoutes);
-
-app.use("/api", router);
+app.use("/auth", authRoutes);
+app.use("/home", homeRoutes);
+app.use("/decks", deckRoutes);
+app.use("/notes", notesRoutes);
+app.use("/", flashcardRoutes);
+app.use("/videos", videoRoutes);
+app.use("/profile", profileRoutes);
+app.use("/ai", aiRoutes);
